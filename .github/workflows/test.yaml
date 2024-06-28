@@ -1,0 +1,30 @@
+---
+name: Test
+
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+
+jobs:
+  test:
+    name: Valid integration
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Test HACS Action
+      uses: hacs/action@main
+      with:
+        category: integration
+    - name: Test Home Assistant hassfest
+      uses: home-assistant/actions/hassfest@master
+  pre-commit:
+    name: pre-commit
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+    - uses: pre-commit/action@v3.0.1
