@@ -1,23 +1,24 @@
 """Component to wrap switch entities in entities of other domains."""
-
 from __future__ import annotations
 
 import logging
 
 import voluptuous as vol
-
+from homeassistant.components.cover import DOMAIN as COVER_DOMAIN
 from homeassistant.components.homeassistant import exposed_entities
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_ENTITY_ID
-from homeassistant.core import Event, HomeAssistant, callback
-from homeassistant.helpers import device_registry as dr, entity_registry as er
+from homeassistant.core import callback
+from homeassistant.core import Event
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.event import async_track_entity_registry_updated_event
 
-from homeassistant.components.cover import (
-    DOMAIN as COVER_DOMAIN
-)
-
-from .const import CONF_INVERT, CONF_TARGET_DEVICE_CLASS, CONF_ENTITY_UP, CONF_ENTITY_DOWN
+from .const import CONF_ENTITY_DOWN
+from .const import CONF_ENTITY_UP
+from .const import CONF_INVERT
+from .const import CONF_TARGET_DEVICE_CLASS
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -97,9 +98,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     device_id = async_add_to_device(hass, entry, entity_id)
 
-    await hass.config_entries.async_forward_entry_setups(
-        entry, (COVER_DOMAIN,)
-    )
+    await hass.config_entries.async_forward_entry_setups(entry, (COVER_DOMAIN,))
     return True
 
 
@@ -110,15 +109,14 @@ async def config_entry_update_listener(hass: HomeAssistant, entry: ConfigEntry) 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
-    return await hass.config_entries.async_unload_platforms(
-        entry, (COVER_DOMAIN,)
-    )
+    return await hass.config_entries.async_unload_platforms(entry, (COVER_DOMAIN,))
 
 
 async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Unload a config entry.
 
-    This will unhide the wrapped entity and restore assistant expose settings.
+    This will unhide the wrapped entity and restore assistant expose
+    settings.
     """
     registry = er.async_get(hass)
     try:

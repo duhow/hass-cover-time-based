@@ -1,6 +1,6 @@
 # Cover Time-based Component
 
-Forked from [@davidramosweb](https://github.com/davidramosweb/home-assistant-custom-components-cover-time-based) @ 2021, 
+Forked from [@davidramosweb](https://github.com/davidramosweb/home-assistant-custom-components-cover-time-based) @ 2021,
 this custom component now integrates easily in Home Assistant.
 
 Convert your (dummy) `switch` into a `cover`, and allow to control its position.

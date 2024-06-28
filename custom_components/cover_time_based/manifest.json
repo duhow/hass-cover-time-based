@@ -1,7 +1,9 @@
 {
   "domain": "cover_time_based",
   "name": "Switch to Time-based Cover",
-  "codeowners": ["@duhow"],
+  "codeowners": [
+    "@duhow"
+  ],
   "config_flow": true,
   "documentation": "https://www.home-assistant.io/integrations/cover_time_based",
   "integration_type": "helper",
