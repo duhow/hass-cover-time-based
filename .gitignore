@@ -1,1 +1,6 @@
 __pycache__/
+
+# local dev env
+
+/config
+/run.sh
