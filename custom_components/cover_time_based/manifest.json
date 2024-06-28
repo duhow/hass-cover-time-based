@@ -6,8 +6,8 @@
   ],
   "config_flow": true,
   "documentation": "https://github.com/duhow/hass-cover-time-based/tree/main",
-  "issue_tracker": "https://github.com/duhow/hass-cover-time-based/issues",
   "integration_type": "helper",
   "iot_class": "calculated",
+  "issue_tracker": "https://github.com/duhow/hass-cover-time-based/issues",
   "version": "0.0.3"
 }
