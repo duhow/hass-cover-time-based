@@ -29,6 +29,7 @@ from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.util import slugify
 
 from .const import CONF_ENTITY_DOWN
+from .const import CONF_ENTITY_STOP
 from .const import CONF_ENTITY_UP
 from .const import CONF_TIME_CLOSE
 from .const import CONF_TIME_OPEN
@@ -80,6 +81,11 @@ async def async_setup_entry(
     entity_down = er.async_validate_entity_id(
         registry, config_entry.options[CONF_ENTITY_DOWN]
     )
+    entity_stop = None
+    if config_entry.options.get(CONF_ENTITY_STOP):
+        entity_stop = er.async_validate_entity_id(
+            registry, config_entry.options[CONF_ENTITY_STOP]
+        )
 
     async_add_entities(
         [
@@ -90,6 +96,7 @@ async def async_setup_entry(
                 config_entry.options[CONF_TIME_OPEN],
                 entity_up,
                 entity_down,
+                entity_stop,
             )
         ]
     )
@@ -104,6 +111,7 @@ class CoverTimeBased(CoverEntity, RestoreEntity):
         travel_time_up,
         open_switch_entity_id,
         close_switch_entity_id,
+        stop_switch_entity_id=None,
     ):
         """Initialize the cover."""
         if not travel_time_down:
@@ -114,6 +122,8 @@ class CoverTimeBased(CoverEntity, RestoreEntity):
         self._open_switch_entity_id = open_switch_entity_id
         self._close_switch_state = STATE_OFF
         self._close_switch_entity_id = close_switch_entity_id
+        self._stop_switch_state = STATE_OFF
+        self._stop_switch_entity_id = stop_switch_entity_id
         self._name = name
         self._attr_unique_id = unique_id
 
@@ -163,6 +173,13 @@ class CoverTimeBased(CoverEntity, RestoreEntity):
             if self._open_switch_state == event.data.get("new_state").state:
                 return
             self._open_switch_state = event.data.get("new_state").state
+        elif (
+            self.has_stop_entity
+            and event.data.get(ATTR_ENTITY_ID) == self.stop_switch_entity_id
+        ):
+            if self._stop_switch_state == event.data.get("new_state").state:
+                return
+            self._stop_switch_state = event.data.get("new_state").state
 
         # Set unavailable if any of the switches becomes unavailable
         self._attr_available = not any(
@@ -247,6 +264,11 @@ class CoverTimeBased(CoverEntity, RestoreEntity):
     def assumed_state(self):
         """Return True because covers can be stopped midway."""
         return True
+
+    @property
+    def has_stop_entity(self) -> bool:
+        """Check if there is a third input used to stop the cover."""
+        return self._stop_switch_entity_id is not None
 
     async def check_availability(self) -> None:
         """Check if any of the entities is unavailable and update status."""
@@ -360,6 +382,13 @@ class CoverTimeBased(CoverEntity, RestoreEntity):
     async def _async_handle_command(self, command, *args):
         if command == SERVICE_CLOSE_COVER:
             self._state = False
+            if self.has_stop_entity:
+                await self.hass.services.async_call(
+                    "homeassistant",
+                    "turn_off",
+                    {"entity_id": self._stop_switch_entity_id},
+                    False,
+                )
             await self.hass.services.async_call(
                 "homeassistant",
                 "turn_off",
@@ -375,6 +404,13 @@ class CoverTimeBased(CoverEntity, RestoreEntity):
 
         elif command == SERVICE_OPEN_COVER:
             self._state = True
+            if self.has_stop_entity:
+                await self.hass.services.async_call(
+                    "homeassistant",
+                    "turn_off",
+                    {"entity_id": self._stop_switch_entity_id},
+                    False,
+                )
             await self.hass.services.async_call(
                 "homeassistant",
                 "turn_off",
@@ -402,6 +438,13 @@ class CoverTimeBased(CoverEntity, RestoreEntity):
                 {"entity_id": self._open_switch_entity_id},
                 False,
             )
+            if self.has_stop_entity:
+                await self.hass.services.async_call(
+                    "homeassistant",
+                    "turn_on",
+                    {"entity_id": self._stop_switch_entity_id},
+                    False,
+                )
 
         _LOGGER.debug("_async_handle_command :: %s", command)
 

@@ -9,13 +9,15 @@
           "name": "Nom",
           "up": "Pujar",
           "down": "Baixar",
+          "stop": "Aturar (opcional)",
           "time_open": "Temps per obrir la persiana",
           "time_close": "Temps per tancar la persiana (opcional)"
         },
         "data_description": {
           "name": "Nom de la nova persiana a crear.",
           "up": "Entitat que farà l'acció de pujar.",
-          "down": "Entitat que farà l'acció de baixar."
+          "down": "Entitat que farà l'acció de baixar.",
+          "stop": "Entitat que farà l'acció d'aturar el moviment."
         }
       }
     }

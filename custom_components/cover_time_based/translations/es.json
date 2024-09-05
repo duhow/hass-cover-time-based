@@ -9,13 +9,15 @@
           "name": "Nombre",
           "up": "Subir",
           "down": "Bajar",
+          "stop": "Parar movimiento (opcional)",
           "time_open": "Tiempo para abrir la persiana",
           "time_close": "Tiempo para cerrar la persiana (opcional)"
         },
         "data_description": {
           "name": "Nombre de la nueva persiana a crear.",
           "up": "Entidad que realiza la acción de subir.",
-          "down": "Entidad que realiza la acción de bajar."
+          "down": "Entidad que realiza la acción de bajar.",
+          "stop": "Entidad que realiza la acción de parar el movimiento."
         }
       }
     }

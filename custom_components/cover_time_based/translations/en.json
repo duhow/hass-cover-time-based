@@ -9,13 +9,15 @@
           "name": "Name",
           "up": "Up",
           "down": "Down",
+          "stop": "Stop (optional)",
           "time_open": "Time to open the cover",
           "time_close": "Time to close the cover (optional)"
         },
         "data_description": {
           "name": "Name of the new cover to create.",
           "up": "Entity that will open the cover.",
-          "down": "Entity that will close the cover."
+          "down": "Entity that will close the cover.",
+          "stop": "Entity that will stop the cover movement."
         }
       }
     }

@@ -13,10 +13,13 @@ from homeassistant.helpers.schema_config_entry_flow import SchemaConfigFlowHandl
 from homeassistant.helpers.schema_config_entry_flow import SchemaFlowFormStep
 
 from .const import CONF_ENTITY_DOWN
+from .const import CONF_ENTITY_STOP
 from .const import CONF_ENTITY_UP
 from .const import CONF_TIME_CLOSE
 from .const import CONF_TIME_OPEN
 from .const import DOMAIN
+
+DOMAIN_ENTITIES_ALLOWED = [Platform.SWITCH, Platform.LIGHT]
 
 CONFIG_FLOW = {
     "user": SchemaFlowFormStep(
@@ -24,14 +27,13 @@ CONFIG_FLOW = {
             {
                 vol.Required(CONF_NAME): selector.TextSelector(),
                 vol.Required(CONF_ENTITY_UP): selector.EntitySelector(
-                    selector.EntitySelectorConfig(
-                        domain=[Platform.SWITCH, Platform.LIGHT]
-                    )
+                    selector.EntitySelectorConfig(domain=DOMAIN_ENTITIES_ALLOWED)
                 ),
                 vol.Required(CONF_ENTITY_DOWN): selector.EntitySelector(
-                    selector.EntitySelectorConfig(
-                        domain=[Platform.SWITCH, Platform.LIGHT]
-                    )
+                    selector.EntitySelectorConfig(domain=DOMAIN_ENTITIES_ALLOWED)
+                ),
+                vol.Optional(CONF_ENTITY_STOP): selector.EntitySelector(
+                    selector.EntitySelectorConfig(domain=DOMAIN_ENTITIES_ALLOWED)
                 ),
                 vol.Required(CONF_TIME_OPEN, default=25): selector.NumberSelector(
                     selector.NumberSelectorConfig(
@@ -89,7 +91,7 @@ class CoverTimeBasedConfigFlowHandler(SchemaConfigFlowHandler, domain=DOMAIN):
     options_flow = OPTIONS_FLOW
 
     VERSION = 1
-    MINOR_VERSION = 2
+    MINOR_VERSION = 3
 
     def async_config_entry_title(self, options: Mapping[str, Any]) -> str:
         """Return config entry title and hide the wrapped entity if
@@ -97,7 +99,7 @@ class CoverTimeBasedConfigFlowHandler(SchemaConfigFlowHandler, domain=DOMAIN):
         # Hide the wrapped entry if registered
         registry = er.async_get(self.hass)
 
-        for entity in [CONF_ENTITY_UP, CONF_ENTITY_DOWN]:
+        for entity in [CONF_ENTITY_UP, CONF_ENTITY_DOWN, CONF_ENTITY_STOP]:
             entity_entry = registry.async_get(options[entity])
             if entity_entry is not None and not entity_entry.hidden:
                 registry.async_update_entity(
