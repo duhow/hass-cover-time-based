@@ -100,6 +100,8 @@ class CoverTimeBasedConfigFlowHandler(SchemaConfigFlowHandler, domain=DOMAIN):
         registry = er.async_get(self.hass)
 
         for entity in [CONF_ENTITY_UP, CONF_ENTITY_DOWN, CONF_ENTITY_STOP]:
+            if not options.get(entity):  # stop is optional
+                continue
             entity_entry = registry.async_get(options[entity])
             if entity_entry is not None and not entity_entry.hidden:
                 registry.async_update_entity(
