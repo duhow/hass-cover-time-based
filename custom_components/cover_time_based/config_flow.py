@@ -19,7 +19,7 @@ from .const import CONF_TIME_CLOSE
 from .const import CONF_TIME_OPEN
 from .const import DOMAIN
 
-DOMAIN_ENTITIES_ALLOWED = [Platform.SWITCH, Platform.LIGHT]
+DOMAIN_ENTITIES_ALLOWED = [Platform.SWITCH, Platform.LIGHT, Platform.BUTTON, "script"]
 
 CONFIG_FLOW = {
     "user": SchemaFlowFormStep(

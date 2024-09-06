@@ -11,6 +11,7 @@ from homeassistant.components.cover import DOMAIN as COVER_DOMAIN
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ATTR_ENTITY_ID
 from homeassistant.const import EVENT_STATE_CHANGED
+from homeassistant.const import Platform
 from homeassistant.const import SERVICE_CLOSE_COVER
 from homeassistant.const import SERVICE_OPEN_COVER
 from homeassistant.const import SERVICE_STOP_COVER
@@ -152,6 +153,7 @@ class CoverTimeBased(CoverEntity, RestoreEntity):
         if event.data.get(ATTR_ENTITY_ID) not in [
             self._close_switch_entity_id,
             self._open_switch_entity_id,
+            self._stop_switch_entity_id,
         ]:
             return
 
@@ -162,6 +164,13 @@ class CoverTimeBased(CoverEntity, RestoreEntity):
             return
 
         if event.data.get("new_state").state == event.data.get("old_state").state:
+            return
+
+        # avoid loop
+        if event.data.get(ATTR_ENTITY_ID).startswith("script."):
+            return
+
+        if event.data.get(ATTR_ENTITY_ID).startswith(f"{Platform.BUTTON}."):
             return
 
         # Target switch/light
@@ -379,72 +388,44 @@ class CoverTimeBased(CoverEntity, RestoreEntity):
             await self._async_handle_command(SERVICE_STOP_COVER)
             self.tc.stop()
 
+    async def set_entity(self, state: str, entity_id, wait=False):
+        if state not in [STATE_ON, STATE_OFF]:
+            raise Exception(f"calling set_entity with wrong state {state}")
+
+        domain = "homeassistant"
+        action = f"turn_{state}"
+
+        if entity_id.startswith(Platform.BUTTON):
+            domain = "input_button"
+            action = "press"
+        elif entity_id.startswith("script"):
+            domain = "script"
+
+        return await self.hass.services.async_call(
+            domain, action, {"entity_id": entity_id}, wait
+        )
+
     async def _async_handle_command(self, command, *args):
         if command == SERVICE_CLOSE_COVER:
             self._state = False
             if self.has_stop_entity:
-                await self.hass.services.async_call(
-                    "homeassistant",
-                    "turn_off",
-                    {"entity_id": self._stop_switch_entity_id},
-                    False,
-                )
-            await self.hass.services.async_call(
-                "homeassistant",
-                "turn_off",
-                {"entity_id": self._open_switch_entity_id},
-                False,
-            )
-            await self.hass.services.async_call(
-                "homeassistant",
-                "turn_on",
-                {"entity_id": self._close_switch_entity_id},
-                True,
-            )
+                await self.set_entity(STATE_OFF, self._stop_switch_entity_id)
+            await self.set_entity(STATE_OFF, self._open_switch_entity_id)
+            await self.set_entity(STATE_ON, self._close_switch_entity_id, True)
 
         elif command == SERVICE_OPEN_COVER:
             self._state = True
             if self.has_stop_entity:
-                await self.hass.services.async_call(
-                    "homeassistant",
-                    "turn_off",
-                    {"entity_id": self._stop_switch_entity_id},
-                    False,
-                )
-            await self.hass.services.async_call(
-                "homeassistant",
-                "turn_off",
-                {"entity_id": self._close_switch_entity_id},
-                False,
-            )
-            await self.hass.services.async_call(
-                "homeassistant",
-                "turn_on",
-                {"entity_id": self._open_switch_entity_id},
-                True,
-            )
+                await self.set_entity(STATE_OFF, self._stop_switch_entity_id)
+            await self.set_entity(STATE_OFF, self._close_switch_entity_id)
+            await self.set_entity(STATE_ON, self._open_switch_entity_id, True)
 
         elif command == SERVICE_STOP_COVER:
             self._state = True
-            await self.hass.services.async_call(
-                "homeassistant",
-                "turn_off",
-                {"entity_id": self._close_switch_entity_id},
-                False,
-            )
-            await self.hass.services.async_call(
-                "homeassistant",
-                "turn_off",
-                {"entity_id": self._open_switch_entity_id},
-                False,
-            )
+            await self.set_entity(STATE_OFF, self._close_switch_entity_id)
+            await self.set_entity(STATE_OFF, self._open_switch_entity_id)
             if self.has_stop_entity:
-                await self.hass.services.async_call(
-                    "homeassistant",
-                    "turn_on",
-                    {"entity_id": self._stop_switch_entity_id},
-                    True,
-                )
+                await self.set_entity(STATE_ON, self._stop_switch_entity_id, True)
 
         _LOGGER.debug("_async_handle_command :: %s", command)
 
