@@ -7,6 +7,10 @@ Convert your (dummy) `switch` into a `cover`, and allow to control its position.
 
 Additionally, if you interact with your physical switch, the position status will be updated as well.
 
+**Optional:** If your cover uses a third button for stopping, you can also add it (normally your cover will stop once the up/down switch is turned off).
+
+**Experimental:** You can add `scripts` to enable custom action (eg. MQTT calls), for easy integration with other hardware.
+
 ## Install
 
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=duhow&repository=hass-cover-time-based&category=integration)
