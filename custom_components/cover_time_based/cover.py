@@ -443,7 +443,7 @@ class CoverTimeBased(CoverEntity, RestoreEntity):
                     "homeassistant",
                     "turn_on",
                     {"entity_id": self._stop_switch_entity_id},
-                    False,
+                    True,
                 )
 
         _LOGGER.debug("_async_handle_command :: %s", command)
