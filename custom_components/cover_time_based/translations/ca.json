@@ -11,13 +11,15 @@
           "down": "Baixar",
           "stop": "Aturar (opcional)",
           "time_open": "Temps per obrir la persiana",
-          "time_close": "Temps per tancar la persiana (opcional)"
+          "time_close": "Temps per tancar la persiana (opcional)",
+          "delay_stop": "Retardar l'ordre d'aturada als extrems"
         },
         "data_description": {
           "name": "Nom de la nova persiana a crear.",
           "up": "Entitat que farà l'acció de pujar.",
           "down": "Entitat que farà l'acció de baixar.",
-          "stop": "Entitat que farà l'acció d'aturar el moviment."
+          "stop": "Entitat que farà l'acció d'aturar el moviment.",
+          "delay_stop": "Quan s'activa, l'ordre d'aturada quan la persiana és totalment oberta o tancada es retarda 30 segons per evitar una aturada prematura causada per retards de comunicació del pont."
         }
       }
     }
@@ -27,7 +29,11 @@
       "init": {
         "data": {
           "time_open": "Temps per obrir la persiana",
-          "time_close": "Temps per tancar la persiana (opcional)"
+          "time_close": "Temps per tancar la persiana (opcional)",
+          "delay_stop": "Retardar l'ordre d'aturada als extrems"
+        },
+        "data_description": {
+          "delay_stop": "Quan s'activa, l'ordre d'aturada quan la persiana és totalment oberta o tancada es retarda 30 segons per evitar una aturada prematura causada per retards de comunicació del pont."
         }
       }
     }

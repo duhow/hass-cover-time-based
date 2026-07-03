@@ -11,13 +11,15 @@
           "down": "Bajar",
           "stop": "Parar movimiento (opcional)",
           "time_open": "Tiempo para abrir la persiana",
-          "time_close": "Tiempo para cerrar la persiana (opcional)"
+          "time_close": "Tiempo para cerrar la persiana (opcional)",
+          "delay_stop": "Retrasar la parada en los extremos"
         },
         "data_description": {
           "name": "Nombre de la nueva persiana a crear.",
           "up": "Entidad que realiza la acción de subir.",
           "down": "Entidad que realiza la acción de bajar.",
-          "stop": "Entidad que realiza la acción de parar el movimiento."
+          "stop": "Entidad que realiza la acción de parar el movimiento.",
+          "delay_stop": "Cuando está activado, la orden de parada cuando la persiana está completamente abierta o cerrada se retrasa 30 segundos para evitar una parada prematura causada por retrasos de comunicación del puente."
         }
       }
     }
@@ -27,7 +29,11 @@
       "init": {
         "data": {
           "time_open": "Tiempo para abrir la persiana",
-          "time_close": "Tiempo para cerrar la persiana (opcional)"
+          "time_close": "Tiempo para cerrar la persiana (opcional)",
+          "delay_stop": "Retrasar la parada en los extremos"
+        },
+        "data_description": {
+          "delay_stop": "Cuando está activado, la orden de parada cuando la persiana está completamente abierta o cerrada se retrasa 30 segundos para evitar una parada prematura causada por retrasos de comunicación del puente."
         }
       }
     }

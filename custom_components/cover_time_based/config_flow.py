@@ -13,6 +13,7 @@ from homeassistant.helpers import selector
 from homeassistant.helpers.schema_config_entry_flow import SchemaConfigFlowHandler
 from homeassistant.helpers.schema_config_entry_flow import SchemaFlowFormStep
 
+from .const import CONF_DELAY_STOP
 from .const import CONF_ENTITY_DOWN
 from .const import CONF_ENTITY_STOP
 from .const import CONF_ENTITY_UP
@@ -53,6 +54,9 @@ CONFIG_FLOW = {
                         unit_of_measurement="sec",
                     )
                 ),
+                vol.Optional(
+                    CONF_DELAY_STOP, default=False
+                ): selector.BooleanSelector(),
             }
         )
     )
@@ -79,6 +83,9 @@ OPTIONS_FLOW = {
                         unit_of_measurement="sec",
                     )
                 ),
+                vol.Optional(
+                    CONF_DELAY_STOP, default=False
+                ): selector.BooleanSelector(),
             }
         )
     ),
