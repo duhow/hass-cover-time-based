@@ -1,10 +1,16 @@
 {
   "title": "Cambiar el tipo de interruptor a Persiana temporizada",
   "config": {
+    "error": {
+      "entity_down_required": "La entidad 'bajar' es obligatoria cuando se usan interruptores o luces.",
+      "mixed_entity_types": "No se pueden mezclar entidades de persiana con interruptores o luces. Usa una entidad de persiana para subir y bajar, o interruptores/luces.",
+      "different_cover_entities": "Al usar una entidad de persiana, la misma entidad debe usarse para subir y bajar.",
+      "stop_not_supported_for_cover": "Una entidad de parada no está disponible al envolver una persiana; la persiana ya gestiona la parada internamente."
+    },
     "step": {
       "user": {
         "title": "Crear una Persiana temporizada desde otros interruptores",
-        "description": "Selecciona dos interruptores o luces, y conviertelos en una Persiana en Home Assistant. Las entidades que selecciones quedarán ocultas.",
+        "description": "Selecciona dos interruptores o luces (o una sola entidad de persiana), y conviértelos en una Persiana en Home Assistant. Las entidades que selecciones quedarán ocultas.",
         "data": {
           "name": "Nombre",
           "up": "Subir",
@@ -15,8 +21,8 @@
         },
         "data_description": {
           "name": "Nombre de la nueva persiana a crear.",
-          "up": "Entidad que realiza la acción de subir.",
-          "down": "Entidad que realiza la acción de bajar.",
+          "up": "Entidad que realiza la acción de subir. Usa una entidad de persiana para añadir seguimiento de posición por tiempo a una persiana existente.",
+          "down": "Entidad que realiza la acción de bajar. Déjalo vacío cuando uses una entidad de persiana en 'subir' (se usa la misma automáticamente).",
           "stop": "Entidad que realiza la acción de parar el movimiento."
         }
       }

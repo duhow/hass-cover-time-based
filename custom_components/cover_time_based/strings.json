@@ -1,10 +1,16 @@
 {
   "title": "Change device type to a Cover time-based",
   "config": {
+    "error": {
+      "entity_down_required": "The 'down' entity is required when using switch or light entities.",
+      "mixed_entity_types": "Cannot mix cover entities with switch or light entities. Use either a cover entity for both up and down, or switch/light entities.",
+      "different_cover_entities": "When using a cover entity, the same entity must be used for both up and down.",
+      "stop_not_supported_for_cover": "A stop entity is not supported when wrapping a cover entity; the cover already handles stop internally."
+    },
     "step": {
       "user": {
         "title": "Create a Cover time-based from other entities",
-        "description": "Pick two switches or lights that you want to show up in Home Assistant as a cover. The original entities will be hidden.",
+        "description": "Pick two switches or lights (or a single cover entity) to show in Home Assistant as a time-based cover. The original entities will be hidden.",
         "data": {
           "name": "Name",
           "up": "Up",
@@ -14,8 +20,8 @@
         },
         "data_description": {
           "name": "Name of the new cover to create.",
-          "up": "Entity that will open the cover.",
-          "down": "Entity that will close the cover."
+          "up": "Entity that will open the cover. Use a cover entity here to wrap an existing cover with time-based position tracking.",
+          "down": "Entity that will close the cover. Leave empty when using a cover entity for 'up' (the same cover is used automatically)."
         }
       }
     }
