@@ -22,9 +22,8 @@ from homeassistant.const import STATE_UNAVAILABLE
 from homeassistant.const import STATE_UNKNOWN
 from homeassistant.core import callback
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers.device import async_entity_id_to_device
 from homeassistant.helpers import entity_registry as er
-from homeassistant.helpers.device_registry import DeviceEntry
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.restore_state import RestoreEntity
@@ -39,28 +38,6 @@ from .travelcalculator import TravelCalculator
 from .travelcalculator import TravelStatus
 
 _LOGGER = logging.getLogger(__name__)
-
-
-async def async_get_device_entry_from_entity_id(
-    hass: HomeAssistant, entity_id: str
-) -> DeviceEntry:
-    """Get DeviceEntry from an entity ID."""
-    ent_reg = er.async_get(hass)
-    entity_entry = ent_reg.async_get(entity_id)
-
-    if (
-        entity_entry is None
-        or entity_entry.device_id is None
-        or entity_entry.platform != DOMAIN
-    ):
-        return False
-
-    device_id = entity_entry.device_id
-
-    device_reg = dr.async_get(hass)
-    device = device_reg.async_get(device_id)
-
-    return device
 
 
 def generate_unique_id(name: str) -> str:
@@ -92,6 +69,7 @@ async def async_setup_entry(
     async_add_entities(
         [
             CoverTimeBased(
+                hass,
                 generate_unique_id(config_entry.title),
                 config_entry.title,
                 config_entry.options.get(CONF_TIME_CLOSE),
@@ -107,6 +85,7 @@ async def async_setup_entry(
 class CoverTimeBased(CoverEntity, RestoreEntity):
     def __init__(
         self,
+        hass: HomeAssistant,
         unique_id,
         name,
         travel_time_down,
@@ -128,6 +107,7 @@ class CoverTimeBased(CoverEntity, RestoreEntity):
         self._stop_switch_entity_id = stop_switch_entity_id
         self._name = name
         self._attr_unique_id = unique_id
+        self.device_entry = async_entity_id_to_device(hass, open_switch_entity_id)
 
         self._unsubscribe_auto_updater = None
 
