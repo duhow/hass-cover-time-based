@@ -2,7 +2,7 @@
   "name": "Cover Time-based",
   "render_readme": true,
   "country": "ES",
-  "homeassistant": "2024.1.0",
+  "homeassistant": "2025.8.0",
   "content_in_root": false,
   "zip_release": false
 }
