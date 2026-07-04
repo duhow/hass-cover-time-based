@@ -64,11 +64,17 @@ async def async_setup_entry(
         registry, config_entry.options[CONF_ENTITY_UP]
     )
 
+    entity_down = None
     entity_down_config = config_entry.options.get(CONF_ENTITY_DOWN)
     if entity_down_config:
         entity_down = er.async_validate_entity_id(registry, entity_down_config)
     elif entity_up.startswith(f"{COVER_DOMAIN}."):
         entity_down = entity_up  # cover mode: same entity for both directions
+    else:
+        raise ConfigEntryError(
+            f"Cover {entity_up} is not a cover entity; "
+            "a 'down' entity must be specified for closing"
+        )
 
     entity_stop = None
     if config_entry.options.get(CONF_ENTITY_STOP):
