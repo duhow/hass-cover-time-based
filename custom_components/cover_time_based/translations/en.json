@@ -4,7 +4,8 @@
     "error": {
       "entity_down_required": "The 'down' entity is required when using switch or light entities.",
       "mixed_entity_types": "Cannot mix cover entities with switch or light entities. Use either a cover entity for both up and down, or switch/light entities.",
-      "different_cover_entities": "When using a cover entity, the same entity must be used for both up and down."
+      "different_cover_entities": "When using a cover entity, the same entity must be used for both up and down.",
+      "recursive_not_allowed": "The selected cover was already created by this integration and cannot be wrapped again."
     },
     "step": {
       "user": {

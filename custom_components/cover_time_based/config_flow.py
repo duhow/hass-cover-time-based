@@ -48,6 +48,11 @@ async def _validate_cover_input(
     down_is_cover = entity_down.startswith(cover_prefix) if entity_down else False
 
     if up_is_cover:
+        # Prevent recursive configuration (wrapping a cover created by this integration)
+        registry = er.async_get(handler.parent_handler.hass)
+        entity_entry = registry.async_get(entity_up)
+        if entity_entry is not None and entity_entry.platform == DOMAIN:
+            raise SchemaFlowError("recursive_not_allowed")
         # Cover mode: down must be the same cover entity or omitted
         if entity_down and not down_is_cover:
             raise SchemaFlowError("mixed_entity_types")

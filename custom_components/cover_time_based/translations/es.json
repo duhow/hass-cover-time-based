@@ -4,7 +4,8 @@
     "error": {
       "entity_down_required": "La entidad 'bajar' es obligatoria cuando se usan interruptores o luces.",
       "mixed_entity_types": "No se pueden mezclar entidades de persiana con interruptores o luces. Usa una entidad de persiana para subir y bajar, o interruptores/luces.",
-      "different_cover_entities": "Al usar una entidad de persiana, la misma entidad debe usarse para subir y bajar."
+      "different_cover_entities": "Al usar una entidad de persiana, la misma entidad debe usarse para subir y bajar.",
+      "recursive_not_allowed": "La persiana seleccionada ya fue creada por esta integración y no puede volver a envolverse."
     },
     "step": {
       "user": {
