@@ -1,10 +1,16 @@
 {
   "title": "Canvia un commutador a Persiana cronometrada",
   "config": {
+    "error": {
+      "entity_down_required": "L'entitat 'baixar' és obligatòria quan s'utilitzen interruptors o llums.",
+      "mixed_entity_types": "No es poden combinar persianes amb interruptors o llums. Utilitza o bé una persiana o bé interruptors/llums.",
+      "different_cover_entities": "Quan s'utilitza una persiana, s'ha d'usar la mateixa entitat per a pujar i baixar.",
+      "recursive_not_allowed": "La persiana seleccionada ja va ser creada per aquesta integració i no es pot embolicar de nou."
+    },
     "step": {
       "user": {
         "title": "Crea una Persiana cronometrada des d'altres commutadors",
-        "description": "Escull dos interruptors, commutadors o llums i converteix-los en una Persiana a Home Assistant. Les entitats que escullis s'amagaràn.",
+        "description": "Escull dos interruptors, commutadors o llums (o una sola persiana) i converteix-los en una Persiana a Home Assistant. Les entitats que escullis s'amagaràn.",
         "data": {
           "name": "Nom",
           "up": "Pujar",
@@ -12,14 +18,14 @@
           "stop": "Aturar (opcional)",
           "time_open": "Temps per obrir la persiana",
           "time_close": "Temps per tancar la persiana (opcional)",
-          "delay_stop": "Retardar l'ordre d'aturada als extrems"
+          "delay_stop": "Retardar l'aturada als extrems"
         },
         "data_description": {
           "name": "Nom de la nova persiana a crear.",
           "up": "Entitat que farà l'acció de pujar.",
           "down": "Entitat que farà l'acció de baixar.",
           "stop": "Entitat que farà l'acció d'aturar el moviment.",
-          "delay_stop": "Quan s'activa, l'ordre d'aturada quan la persiana és totalment oberta o tancada es retarda 30 segons per evitar una aturada prematura causada per retards de comunicació del pont."
+          "delay_stop": "Retarda l'ordre d'aturada 30 s quan la persiana arriba a la posició totalment oberta o tancada."
         }
       }
     }
@@ -30,10 +36,10 @@
         "data": {
           "time_open": "Temps per obrir la persiana",
           "time_close": "Temps per tancar la persiana (opcional)",
-          "delay_stop": "Retardar l'ordre d'aturada als extrems"
+          "delay_stop": "Retardar l'aturada als extrems"
         },
         "data_description": {
-          "delay_stop": "Quan s'activa, l'ordre d'aturada quan la persiana és totalment oberta o tancada es retarda 30 segons per evitar una aturada prematura causada per retards de comunicació del pont."
+          "delay_stop": "Retarda l'ordre d'aturada 30 s quan la persiana arriba a la posició totalment oberta o tancada."
         }
       }
     }

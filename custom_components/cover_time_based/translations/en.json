@@ -1,10 +1,16 @@
 {
   "title": "Change device type to a Cover time-based",
   "config": {
+    "error": {
+      "entity_down_required": "The 'down' entity is required when using switch or light entities.",
+      "mixed_entity_types": "Cannot mix cover entities with switch or light entities. Use either a cover entity for both up and down, or switch/light entities.",
+      "different_cover_entities": "When using a cover entity, the same entity must be used for both up and down.",
+      "recursive_not_allowed": "The selected cover was already created by this integration and cannot be wrapped again."
+    },
     "step": {
       "user": {
         "title": "Create a Cover time-based from other entities",
-        "description": "Pick two switches or lights that you want to show up in Home Assistant as a cover. The original entities will be hidden.",
+        "description": "Pick two switches or lights (or a single cover entity) to show in Home Assistant as a time-based cover. The original entities will be hidden.",
         "data": {
           "name": "Name",
           "up": "Up",
@@ -19,7 +25,7 @@
           "up": "Entity that will open the cover.",
           "down": "Entity that will close the cover.",
           "stop": "Entity that will stop the cover movement.",
-          "delay_stop": "When enabled, the stop command at fully open or fully closed position is delayed by 30 seconds to prevent a premature stop caused by bridge communication delays."
+          "delay_stop": "Delays the stop command by 30 s when the cover reaches fully open or closed position."
         }
       }
     }
@@ -33,7 +39,7 @@
           "delay_stop": "Delay stop at endpoints"
         },
         "data_description": {
-          "delay_stop": "When enabled, the stop command at fully open or fully closed position is delayed by 30 seconds to prevent a premature stop caused by bridge communication delays."
+          "delay_stop": "Delays the stop command by 30 s when the cover reaches fully open or closed position."
         }
       }
     }
