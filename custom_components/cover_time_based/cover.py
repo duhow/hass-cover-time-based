@@ -10,14 +10,19 @@ from homeassistant.components.cover import ATTR_POSITION
 from homeassistant.components.cover import CoverEntity
 from homeassistant.components.cover import DOMAIN as COVER_DOMAIN
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.config_entries import ConfigEntryError
 from homeassistant.const import ATTR_ENTITY_ID
 from homeassistant.const import EVENT_STATE_CHANGED
 from homeassistant.const import Platform
 from homeassistant.const import SERVICE_CLOSE_COVER
 from homeassistant.const import SERVICE_OPEN_COVER
 from homeassistant.const import SERVICE_STOP_COVER
+from homeassistant.const import STATE_CLOSED
+from homeassistant.const import STATE_CLOSING
 from homeassistant.const import STATE_OFF
 from homeassistant.const import STATE_ON
+from homeassistant.const import STATE_OPEN
+from homeassistant.const import STATE_OPENING
 from homeassistant.const import STATE_UNAVAILABLE
 from homeassistant.const import STATE_UNKNOWN
 from homeassistant.core import callback
@@ -34,6 +39,7 @@ from .const import CONF_ENTITY_STOP
 from .const import CONF_ENTITY_UP
 from .const import CONF_TIME_CLOSE
 from .const import CONF_TIME_OPEN
+from .const import DOMAIN
 from .travelcalculator import TravelCalculator
 from .travelcalculator import TravelStatus
 
@@ -57,14 +63,33 @@ async def async_setup_entry(
     entity_up = er.async_validate_entity_id(
         registry, config_entry.options[CONF_ENTITY_UP]
     )
-    entity_down = er.async_validate_entity_id(
-        registry, config_entry.options[CONF_ENTITY_DOWN]
-    )
+
+    entity_down = None
+    entity_down_config = config_entry.options.get(CONF_ENTITY_DOWN)
+    if entity_down_config:
+        entity_down = er.async_validate_entity_id(registry, entity_down_config)
+    elif entity_up.startswith(f"{COVER_DOMAIN}."):
+        entity_down = entity_up  # cover mode: same entity for both directions
+    else:
+        raise ConfigEntryError(
+            f"Cover {entity_up} is not a cover entity; "
+            "a 'down' entity must be specified for closing"
+        )
+
     entity_stop = None
     if config_entry.options.get(CONF_ENTITY_STOP):
         entity_stop = er.async_validate_entity_id(
             registry, config_entry.options[CONF_ENTITY_STOP]
         )
+
+    # Prevent recursive configuration (wrapping a cover created by this integration)
+    if entity_up.startswith(f"{COVER_DOMAIN}."):
+        entity_entry = registry.async_get(entity_up)
+        if entity_entry is not None and entity_entry.platform == DOMAIN:
+            raise ConfigEntryError(
+                f"Cover {entity_up} was created by this integration; "
+                "recursive configuration is not supported"
+            )
 
     async_add_entities(
         [
@@ -109,6 +134,9 @@ class CoverTimeBased(CoverEntity, RestoreEntity):
         self._attr_unique_id = unique_id
         self.device_entry = async_entity_id_to_device(hass, open_switch_entity_id)
 
+        # True when the entity being wrapped is itself a cover
+        self._is_cover_mode = open_switch_entity_id.startswith(f"{COVER_DOMAIN}.")
+
         self._unsubscribe_auto_updater = None
 
         self.tc = TravelCalculator(self._travel_time_down, self._travel_time_up)
@@ -152,6 +180,33 @@ class CoverTimeBased(CoverEntity, RestoreEntity):
             return
 
         if event.data.get(ATTR_ENTITY_ID).startswith(f"{Platform.BUTTON}."):
+            return
+
+        # Cover mode: translate cover entity state changes into open/close/stop actions
+        if self._is_cover_mode:
+            new_state = event.data.get("new_state").state
+            self._attr_available = new_state not in [STATE_UNAVAILABLE, STATE_UNKNOWN]
+
+            if new_state == STATE_OPENING:
+                # Avoid restarting travel if we already initiated opening
+                if not (
+                    self.tc.is_traveling()
+                    and self.tc.travel_direction == TravelStatus.DIRECTION_DOWN
+                ):
+                    await self.async_open_cover(handle_command=False)
+            elif new_state == STATE_CLOSING:
+                # Avoid restarting travel if we already initiated closing
+                if not (
+                    self.tc.is_traveling()
+                    and self.tc.travel_direction == TravelStatus.DIRECTION_UP
+                ):
+                    await self.async_close_cover(handle_command=False)
+            elif new_state in [STATE_OPEN, STATE_CLOSED]:
+                # Cover reached end position — stop our travel calculator without
+                # sending a redundant stop command to the cover entity
+                if self.tc.is_traveling():
+                    self.tc.stop()
+                    self.stop_auto_updater()
             return
 
         # Target switch/light
@@ -262,6 +317,13 @@ class CoverTimeBased(CoverEntity, RestoreEntity):
 
     async def check_availability(self) -> None:
         """Check if any of the entities is unavailable and update status."""
+        if self._is_cover_mode:
+            state = self.hass.states.get(self._open_switch_entity_id)
+            if state is None or state.state in [STATE_UNAVAILABLE, STATE_UNKNOWN]:
+                self._attr_available = False
+            else:
+                self._attr_available = True
+            return
         for entity in [self._close_switch_entity_id, self._open_switch_entity_id]:
             state = self.hass.states.get(entity)
             if state.state in [STATE_UNAVAILABLE, STATE_UNKNOWN]:
@@ -387,7 +449,23 @@ class CoverTimeBased(CoverEntity, RestoreEntity):
         )
 
     async def _async_handle_command(self, command, *args):
-        if command == SERVICE_CLOSE_COVER:
+        if self._is_cover_mode:
+            cover_entity_id = self._open_switch_entity_id
+            if command == SERVICE_CLOSE_COVER:
+                self._state = False
+            elif command in [SERVICE_OPEN_COVER, SERVICE_STOP_COVER]:
+                self._state = True
+            else:
+                _LOGGER.error("_async_handle_command :: unknown command %s", command)
+                return
+            # Call the requested "command"
+            await self.hass.services.async_call(
+                COVER_DOMAIN,
+                command,
+                {"entity_id": cover_entity_id},
+                True,
+            )
+        elif command == SERVICE_CLOSE_COVER:
             self._state = False
             if self.has_stop_entity:
                 await self.set_entity(STATE_OFF, self._stop_switch_entity_id)

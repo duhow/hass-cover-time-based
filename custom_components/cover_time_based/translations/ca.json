@@ -1,10 +1,16 @@
 {
   "title": "Canvia un commutador a Persiana cronometrada",
   "config": {
+    "error": {
+      "entity_down_required": "L'entitat 'baixar' és obligatòria quan s'usen commutadors o llums.",
+      "mixed_entity_types": "No es poden barrejar entitats de persiana amb commutadors o llums. Usa una entitat de persiana per a pujar i baixar, o commutadors/llums.",
+      "different_cover_entities": "En usar una entitat de persiana, la mateixa entitat s'ha d'usar per a pujar i baixar.",
+      "recursive_not_allowed": "La persiana seleccionada ja va ser creada per aquesta integració i no es pot tornar a embolcallar."
+    },
     "step": {
       "user": {
         "title": "Crea una Persiana cronometrada des d'altres commutadors",
-        "description": "Escull dos interruptors, commutadors o llums i converteix-los en una Persiana a Home Assistant. Les entitats que escullis s'amagaràn.",
+        "description": "Escull dos interruptors, commutadors o llums (o una sola entitat de persiana) i converteix-los en una Persiana a Home Assistant. Les entitats que escullis s'amagaràn.",
         "data": {
           "name": "Nom",
           "up": "Pujar",

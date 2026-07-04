@@ -10,7 +10,9 @@ from homeassistant.const import CONF_NAME
 from homeassistant.const import Platform
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers import selector
+from homeassistant.helpers.schema_config_entry_flow import SchemaCommonFlowHandler
 from homeassistant.helpers.schema_config_entry_flow import SchemaConfigFlowHandler
+from homeassistant.helpers.schema_config_entry_flow import SchemaFlowError
 from homeassistant.helpers.schema_config_entry_flow import SchemaFlowFormStep
 
 from .const import CONF_ENTITY_DOWN
@@ -20,7 +22,54 @@ from .const import CONF_TIME_CLOSE
 from .const import CONF_TIME_OPEN
 from .const import DOMAIN
 
-DOMAIN_ENTITIES_ALLOWED = [Platform.SWITCH, Platform.LIGHT, Platform.BUTTON, "script"]
+DOMAIN_ENTITIES_ALLOWED = [
+    Platform.SWITCH,
+    Platform.LIGHT,
+    Platform.BUTTON,
+    Platform.COVER,
+    "script",
+]
+
+
+async def _validate_cover_input(
+    handler: SchemaCommonFlowHandler, user_input: dict[str, Any]
+) -> dict[str, Any]:
+    """Validate that entity configuration is consistent.
+
+    Accepts either:
+    - Two switch/light entities for up and down (with optional stop)
+    - A single cover entity for up (down is auto-filled with the same entity)
+    """
+    entity_up = user_input.get(CONF_ENTITY_UP, "")
+    entity_down = user_input.get(CONF_ENTITY_DOWN) or ""
+
+    cover_prefix = f"{Platform.COVER}."
+    up_is_cover = entity_up.startswith(cover_prefix)
+    down_is_cover = entity_down.startswith(cover_prefix) if entity_down else False
+
+    if up_is_cover:
+        # Prevent recursive configuration (wrapping a cover created by this integration)
+        registry = er.async_get(handler.parent_handler.hass)
+        entity_entry = registry.async_get(entity_up)
+        if entity_entry is not None and entity_entry.platform == DOMAIN:
+            raise SchemaFlowError("recursive_not_allowed")
+        # Cover mode: down must be the same cover entity or omitted
+        if entity_down and not down_is_cover:
+            raise SchemaFlowError("mixed_entity_types")
+        if entity_down and entity_up != entity_down:
+            raise SchemaFlowError("different_cover_entities")
+        # Auto-fill down with up entity so options always contain both
+        user_input[CONF_ENTITY_DOWN] = entity_up
+    elif down_is_cover:
+        # down is a cover but up is not — mixed types
+        raise SchemaFlowError("mixed_entity_types")
+    else:
+        # Switch mode: both up and down must be provided
+        if not entity_down:
+            raise SchemaFlowError("entity_down_required")
+
+    return user_input
+
 
 CONFIG_FLOW = {
     "user": SchemaFlowFormStep(
@@ -30,7 +79,7 @@ CONFIG_FLOW = {
                 vol.Required(CONF_ENTITY_UP): selector.EntitySelector(
                     selector.EntitySelectorConfig(domain=DOMAIN_ENTITIES_ALLOWED)
                 ),
-                vol.Required(CONF_ENTITY_DOWN): selector.EntitySelector(
+                vol.Optional(CONF_ENTITY_DOWN): selector.EntitySelector(
                     selector.EntitySelectorConfig(domain=DOMAIN_ENTITIES_ALLOWED)
                 ),
                 vol.Optional(CONF_ENTITY_STOP): selector.EntitySelector(
@@ -54,7 +103,8 @@ CONFIG_FLOW = {
                     )
                 ),
             }
-        )
+        ),
+        validate_user_input=_validate_cover_input,
     )
 }
 
@@ -92,7 +142,7 @@ class CoverTimeBasedConfigFlowHandler(SchemaConfigFlowHandler, domain=DOMAIN):
     options_flow = OPTIONS_FLOW
 
     VERSION = 1
-    MINOR_VERSION = 4
+    MINOR_VERSION = 5
 
     def async_config_entry_title(self, options: Mapping[str, Any]) -> str:
         """Return config entry title and hide the wrapped entity if
