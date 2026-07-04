@@ -145,6 +145,7 @@ class CoverTimeBased(CoverEntity, RestoreEntity):
 
         self._unsubscribe_auto_updater = None
         self._unsubscribe_delayed_stop = None
+        self._unsubscribe_state_changed = None
 
         self.tc = TravelCalculator(self._travel_time_down, self._travel_time_up)
 
@@ -152,7 +153,9 @@ class CoverTimeBased(CoverEntity, RestoreEntity):
         """Only cover's position matters."""
         """The rest is calculated from this attribute."""
         # Listen to all change events, look for switch/light press
-        self.hass.bus.async_listen(EVENT_STATE_CHANGED, self._handle_state_changed)
+        self._unsubscribe_state_changed = self.hass.bus.async_listen(
+            EVENT_STATE_CHANGED, self._handle_state_changed
+        )
         old_state = await self.async_get_last_state()
         _LOGGER.debug("async_added_to_hass :: oldState %s", old_state)
         if (
@@ -161,6 +164,16 @@ class CoverTimeBased(CoverEntity, RestoreEntity):
             and old_state.attributes.get(ATTR_CURRENT_POSITION) is not None
         ):
             self.tc.set_position(int(old_state.attributes.get(ATTR_CURRENT_POSITION)))
+
+    async def async_will_remove_from_hass(self) -> None:
+        """Cancel all subscriptions when the entity is removed."""
+        if self._unsubscribe_state_changed is not None:
+            self._unsubscribe_state_changed()
+            self._unsubscribe_state_changed = None
+        self.stop_auto_updater()
+        if self._unsubscribe_delayed_stop is not None:
+            self._unsubscribe_delayed_stop()
+            self._unsubscribe_delayed_stop = None
 
     async def _handle_state_changed(self, event):
         """Process changes in Home Assistant, look if switch is opened
