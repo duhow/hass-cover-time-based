@@ -4,8 +4,7 @@
     "error": {
       "entity_down_required": "L'entitat 'baixar' és obligatòria quan s'usen commutadors o llums.",
       "mixed_entity_types": "No es poden barrejar entitats de persiana amb commutadors o llums. Usa una entitat de persiana per a pujar i baixar, o commutadors/llums.",
-      "different_cover_entities": "En usar una entitat de persiana, la mateixa entitat s'ha d'usar per a pujar i baixar.",
-      "stop_not_supported_for_cover": "Una entitat d'aturada no està disponible en embolcallar una persiana; la persiana ja gestiona l'aturada internament."
+      "different_cover_entities": "En usar una entitat de persiana, la mateixa entitat s'ha d'usar per a pujar i baixar."
     },
     "step": {
       "user": {
@@ -21,8 +20,8 @@
         },
         "data_description": {
           "name": "Nom de la nova persiana a crear.",
-          "up": "Entitat que farà l'acció de pujar. Usa una entitat de persiana per afegir seguiment de posició per temps a una persiana existent.",
-          "down": "Entitat que farà l'acció de baixar. Deixa-ho buit quan usis una entitat de persiana a 'pujar' (s'usa la mateixa automàticament).",
+          "up": "Entitat que farà l'acció de pujar.",
+          "down": "Entitat que farà l'acció de baixar.",
           "stop": "Entitat que farà l'acció d'aturar el moviment."
         }
       }

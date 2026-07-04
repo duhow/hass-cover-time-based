@@ -4,8 +4,7 @@
     "error": {
       "entity_down_required": "La entidad 'bajar' es obligatoria cuando se usan interruptores o luces.",
       "mixed_entity_types": "No se pueden mezclar entidades de persiana con interruptores o luces. Usa una entidad de persiana para subir y bajar, o interruptores/luces.",
-      "different_cover_entities": "Al usar una entidad de persiana, la misma entidad debe usarse para subir y bajar.",
-      "stop_not_supported_for_cover": "Una entidad de parada no está disponible al envolver una persiana; la persiana ya gestiona la parada internamente."
+      "different_cover_entities": "Al usar una entidad de persiana, la misma entidad debe usarse para subir y bajar."
     },
     "step": {
       "user": {
@@ -21,8 +20,8 @@
         },
         "data_description": {
           "name": "Nombre de la nueva persiana a crear.",
-          "up": "Entidad que realiza la acción de subir. Usa una entidad de persiana para añadir seguimiento de posición por tiempo a una persiana existente.",
-          "down": "Entidad que realiza la acción de bajar. Déjalo vacío cuando uses una entidad de persiana en 'subir' (se usa la misma automáticamente).",
+          "up": "Entidad que realiza la acción de subir.",
+          "down": "Entidad que realiza la acción de bajar.",
           "stop": "Entidad que realiza la acción de parar el movimiento."
         }
       }

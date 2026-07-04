@@ -67,7 +67,7 @@ async def async_setup_entry(
     entity_down_config = config_entry.options.get(CONF_ENTITY_DOWN)
     if entity_down_config:
         entity_down = er.async_validate_entity_id(registry, entity_down_config)
-    else:
+    elif entity_up.startswith(f"{COVER_DOMAIN}."):
         entity_down = entity_up  # cover mode: same entity for both directions
 
     entity_stop = None
@@ -447,28 +447,18 @@ class CoverTimeBased(CoverEntity, RestoreEntity):
             cover_entity_id = self._open_switch_entity_id
             if command == SERVICE_CLOSE_COVER:
                 self._state = False
-                await self.hass.services.async_call(
-                    COVER_DOMAIN,
-                    SERVICE_CLOSE_COVER,
-                    {"entity_id": cover_entity_id},
-                    True,
-                )
-            elif command == SERVICE_OPEN_COVER:
+            elif command in [SERVICE_OPEN_COVER, SERVICE_STOP_COVER]:
                 self._state = True
-                await self.hass.services.async_call(
-                    COVER_DOMAIN,
-                    SERVICE_OPEN_COVER,
-                    {"entity_id": cover_entity_id},
-                    True,
-                )
-            elif command == SERVICE_STOP_COVER:
-                self._state = True
-                await self.hass.services.async_call(
-                    COVER_DOMAIN,
-                    SERVICE_STOP_COVER,
-                    {"entity_id": cover_entity_id},
-                    True,
-                )
+            else:
+                _LOGGER.error("_async_handle_command :: unknown command %s", command)
+                return
+            # Call the requested "command"
+            await self.hass.services.async_call(
+                COVER_DOMAIN,
+                command,
+                {"entity_id": cover_entity_id},
+                True,
+            )
         elif command == SERVICE_CLOSE_COVER:
             self._state = False
             if self.has_stop_entity:
