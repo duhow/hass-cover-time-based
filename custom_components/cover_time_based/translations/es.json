@@ -17,13 +17,15 @@
           "down": "Bajar",
           "stop": "Parar movimiento (opcional)",
           "time_open": "Tiempo para abrir la persiana",
-          "time_close": "Tiempo para cerrar la persiana (opcional)"
+          "time_close": "Tiempo para cerrar la persiana (opcional)",
+          "delay_stop": "Retrasar parada en los extremos"
         },
         "data_description": {
           "name": "Nombre de la nueva persiana a crear.",
           "up": "Entidad que realiza la acción de subir.",
           "down": "Entidad que realiza la acción de bajar.",
-          "stop": "Entidad que realiza la acción de parar el movimiento."
+          "stop": "Entidad que realiza la acción de parar el movimiento.",
+          "delay_stop": "Retrasa la orden de parada 30 s cuando la persiana llega a la posición completamente abierta o cerrada."
         }
       }
     }
@@ -33,7 +35,11 @@
       "init": {
         "data": {
           "time_open": "Tiempo para abrir la persiana",
-          "time_close": "Tiempo para cerrar la persiana (opcional)"
+          "time_close": "Tiempo para cerrar la persiana (opcional)",
+          "delay_stop": "Retrasar parada en los extremos"
+        },
+        "data_description": {
+          "delay_stop": "Retrasa la orden de parada 30 s cuando la persiana llega a la posición completamente abierta o cerrada."
         }
       }
     }

@@ -30,15 +30,18 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device import async_entity_id_to_device
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.event import async_call_later
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.util import slugify
 
+from .const import CONF_DELAY_STOP
 from .const import CONF_ENTITY_DOWN
 from .const import CONF_ENTITY_STOP
 from .const import CONF_ENTITY_UP
 from .const import CONF_TIME_CLOSE
 from .const import CONF_TIME_OPEN
+from .const import DELAY_STOP_SECONDS
 from .const import DOMAIN
 from .travelcalculator import TravelCalculator
 from .travelcalculator import TravelStatus
@@ -102,6 +105,7 @@ async def async_setup_entry(
                 entity_up,
                 entity_down,
                 entity_stop,
+                config_entry.options.get(CONF_DELAY_STOP, False),
             )
         ]
     )
@@ -118,6 +122,7 @@ class CoverTimeBased(CoverEntity, RestoreEntity):
         open_switch_entity_id,
         close_switch_entity_id,
         stop_switch_entity_id=None,
+        delay_stop=False,
     ):
         """Initialize the cover."""
         if not travel_time_down:
@@ -130,6 +135,7 @@ class CoverTimeBased(CoverEntity, RestoreEntity):
         self._close_switch_entity_id = close_switch_entity_id
         self._stop_switch_state = STATE_OFF
         self._stop_switch_entity_id = stop_switch_entity_id
+        self._delay_stop = delay_stop
         self._name = name
         self._attr_unique_id = unique_id
         self.device_entry = async_entity_id_to_device(hass, open_switch_entity_id)
@@ -138,6 +144,8 @@ class CoverTimeBased(CoverEntity, RestoreEntity):
         self._is_cover_mode = open_switch_entity_id.startswith(f"{COVER_DOMAIN}.")
 
         self._unsubscribe_auto_updater = None
+        self._unsubscribe_delayed_stop = None
+        self._unsubscribe_state_changed = None
 
         self.tc = TravelCalculator(self._travel_time_down, self._travel_time_up)
 
@@ -145,7 +153,9 @@ class CoverTimeBased(CoverEntity, RestoreEntity):
         """Only cover's position matters."""
         """The rest is calculated from this attribute."""
         # Listen to all change events, look for switch/light press
-        self.hass.bus.async_listen(EVENT_STATE_CHANGED, self._handle_state_changed)
+        self._unsubscribe_state_changed = self.hass.bus.async_listen(
+            EVENT_STATE_CHANGED, self._handle_state_changed
+        )
         old_state = await self.async_get_last_state()
         _LOGGER.debug("async_added_to_hass :: oldState %s", old_state)
         if (
@@ -154,6 +164,16 @@ class CoverTimeBased(CoverEntity, RestoreEntity):
             and old_state.attributes.get(ATTR_CURRENT_POSITION) is not None
         ):
             self.tc.set_position(int(old_state.attributes.get(ATTR_CURRENT_POSITION)))
+
+    async def async_will_remove_from_hass(self) -> None:
+        """Cancel all subscriptions when the entity is removed."""
+        if self._unsubscribe_state_changed is not None:
+            self._unsubscribe_state_changed()
+            self._unsubscribe_state_changed = None
+        self.stop_auto_updater()
+        if self._unsubscribe_delayed_stop is not None:
+            self._unsubscribe_delayed_stop()
+            self._unsubscribe_delayed_stop = None
 
     async def _handle_state_changed(self, event):
         """Process changes in Home Assistant, look if switch is opened
@@ -427,9 +447,31 @@ class CoverTimeBased(CoverEntity, RestoreEntity):
     async def auto_stop_if_necessary(self):
         """Do auto stop if necessary."""
         if self.position_reached():
-            _LOGGER.debug("auto_stop_if_necessary :: calling stop command")
-            await self._async_handle_command(SERVICE_STOP_COVER)
-            self.tc.stop()
+            current_position = self.tc.current_position()
+            is_endpoint = current_position in (0, 100)
+            if self._delay_stop and is_endpoint:
+                _LOGGER.debug(
+                    "auto_stop_if_necessary :: endpoint %d reached, scheduling delayed stop in %d seconds",
+                    current_position,
+                    DELAY_STOP_SECONDS,
+                )
+                self.tc.stop()
+                if self._unsubscribe_delayed_stop is not None:
+                    self._unsubscribe_delayed_stop()
+                    self._unsubscribe_delayed_stop = None
+
+                async def _delayed_stop_callback(now):
+                    _LOGGER.debug("auto_stop_if_necessary :: executing delayed stop")
+                    self._unsubscribe_delayed_stop = None
+                    await self._async_handle_command(SERVICE_STOP_COVER)
+
+                self._unsubscribe_delayed_stop = async_call_later(
+                    self.hass, DELAY_STOP_SECONDS, _delayed_stop_callback
+                )
+            else:
+                _LOGGER.debug("auto_stop_if_necessary :: calling stop command")
+                await self._async_handle_command(SERVICE_STOP_COVER)
+                self.tc.stop()
 
     async def set_entity(self, state: str, entity_id, wait=False):
         if state not in [STATE_ON, STATE_OFF]:

@@ -9,3 +9,6 @@ CONF_ENTITY_DOWN: Final = "down"
 CONF_ENTITY_STOP: Final = "stop"
 CONF_TIME_OPEN: Final = "time_open"
 CONF_TIME_CLOSE: Final = "time_close"
+CONF_DELAY_STOP: Final = "delay_stop"
+
+DELAY_STOP_SECONDS: Final = 30
