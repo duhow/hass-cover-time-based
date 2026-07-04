@@ -7,6 +7,8 @@ Convert your (dummy) `switch` into a `cover`, and allow to control its position.
 
 Additionally, if you interact with your physical switch, the position status will be updated as well.
 
+If you already have a `cover` but you cannot control the position, you can wrap it with this integration as well to have that feature.
+
 **Optional:** If your cover uses a third button for stopping, you can also add it (normally your cover will stop once the up/down switch is turned off).
 
 **Experimental:** You can add `scripts` to enable custom action (eg. MQTT calls), for easy integration with other hardware.
