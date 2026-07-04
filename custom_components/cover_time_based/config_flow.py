@@ -20,7 +20,14 @@ from .const import CONF_TIME_CLOSE
 from .const import CONF_TIME_OPEN
 from .const import DOMAIN
 
-DOMAIN_ENTITIES_ALLOWED = [Platform.SWITCH, Platform.LIGHT, Platform.BUTTON, Platform.COVER, "script"]
+DOMAIN_ENTITIES_ALLOWED = [
+    Platform.SWITCH,
+    Platform.LIGHT,
+    Platform.BUTTON,
+    Platform.COVER,
+    "script",
+]
+
 
 def _validate_cover_input(user_input: dict) -> dict:
     """Validate that entity configuration is consistent.
