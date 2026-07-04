@@ -10,7 +10,9 @@ from homeassistant.const import CONF_NAME
 from homeassistant.const import Platform
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers import selector
+from homeassistant.helpers.schema_config_entry_flow import SchemaCommonFlowHandler
 from homeassistant.helpers.schema_config_entry_flow import SchemaConfigFlowHandler
+from homeassistant.helpers.schema_config_entry_flow import SchemaFlowError
 from homeassistant.helpers.schema_config_entry_flow import SchemaFlowFormStep
 
 from .const import CONF_ENTITY_DOWN
@@ -29,7 +31,9 @@ DOMAIN_ENTITIES_ALLOWED = [
 ]
 
 
-def _validate_cover_input(user_input: dict) -> dict:
+async def _validate_cover_input(
+    handler: SchemaCommonFlowHandler, user_input: dict[str, Any]
+) -> dict[str, Any]:
     """Validate that entity configuration is consistent.
 
     Accepts either:
@@ -46,18 +50,18 @@ def _validate_cover_input(user_input: dict) -> dict:
     if up_is_cover:
         # Cover mode: down must be the same cover entity or omitted
         if entity_down and not down_is_cover:
-            raise vol.Invalid("mixed_entity_types")
+            raise SchemaFlowError("mixed_entity_types")
         if entity_down and entity_up != entity_down:
-            raise vol.Invalid("different_cover_entities")
+            raise SchemaFlowError("different_cover_entities")
         # Auto-fill down with up entity so options always contain both
         user_input[CONF_ENTITY_DOWN] = entity_up
     elif down_is_cover:
         # down is a cover but up is not — mixed types
-        raise vol.Invalid("mixed_entity_types")
+        raise SchemaFlowError("mixed_entity_types")
     else:
         # Switch mode: both up and down must be provided
         if not entity_down:
-            raise vol.Invalid("entity_down_required")
+            raise SchemaFlowError("entity_down_required")
 
     return user_input
 
